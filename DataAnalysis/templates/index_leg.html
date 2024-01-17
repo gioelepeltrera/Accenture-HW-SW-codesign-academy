@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Temperature Prediction</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Enter a Date to Predict Temperature in Turin</h2>
+        <form action="/" method="post">
+            <input type="date" name="date" required>
+            <input type="submit" value="Predict">
+        </form>
+        {% if prediction != None %}
+        <h3>Predicted Temperature: {{ prediction|round(1) }}°C</h3>
+        {% endif %}
+    </div>
+</body>
+</html>

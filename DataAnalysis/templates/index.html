@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Include flatpickr and Chart.js libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <title>Temperature Prediction</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Enter a Date to Predict Temperature</h2>
+
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/" method="post">
+            <!-- Date input field -->
+            <input type="text" id="datePicker" name="date" required>
+            <input type="submit" value="Predict">
+        </form>
+        {% if prediction != None %}
+        <h3>On {{ formatted_date }}, the predicted temperature is {{ prediction|round(1) }}°C</h3>
+        {% endif %}
+
+        <!-- Canvas element for the chart -->
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Initialize flatpickr and create the chart -->
+<script>
+    flatpickr("#datePicker", {
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        defaultDate: new Date()
+    });
+
+    // Retrieve historical data and dates from Flask
+    var historicalData = {{ historical_data|tojson }};
+    var dates = {{ historical_dates|tojson }};  // <-- Corrected this line
+
+    // Create a chart
+    var ctx = document.getElementById('temperatureChart').getContext('2d');
+    var temperatureChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,  // X-axis labels are now actual dates
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: historicalData,
+                borderColor: 'blue',
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Include flatpickr and Chart.js libraries -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <title>Temperature Predictions</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Enter a Date to Predict Temperatures</h2>
+
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="/" method="post">
+            <!-- Date input field -->
+            <input type="text" id="datePicker" name="date" required>
+            <input type="submit" value="Predict">
+        </form>
+        {% if prediction_avg != None %}
+        <h3>On {{ formatted_date }}:</h3>
+        <div class="predictions">
+            <div class="prediction-item">
+                <div><strong>Predicted Average Temperature:</strong></div>
+                <div>{{ prediction_avg|round(1) }}°C</div>
+            </div>
+            <div class="prediction-item">
+                <div><strong>Predicted Maximum Temperature:</strong></div>
+                <div>{{ prediction_max|round(1) }}°C</div>
+            </div>
+            <div class="prediction-item">
+                <div><strong>Predicted Minimum Temperature:</strong></div>
+                <div>{{ prediction_min|round(1) }}°C</div>
+            </div>
+        </div>
+        {% endif %}
+
+
+        <!-- Canvas element for the chart -->
+        <canvas id="temperatureChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Initialize flatpickr and create the chart -->
+
+<!-- Initialize flatpickr and create the chart -->
+<script>
+    flatpickr("#datePicker", {
+        altInput: true,
+        altFormat: "F j, Y",
+        dateFormat: "Y-m-d",
+        defaultDate: new Date()
+    });
+
+    // Retrieve historical data and dates from Flask
+    var historicalDataAvg = {{ historical_data_avg|tojson }};
+    var historicalDataMax = {{ historical_data_max|tojson }};
+    var historicalDataMin = {{ historical_data_min|tojson }};
+    var dates = {{ historical_dates|tojson }};
+
+    // Create a chart
+    var ctx = document.getElementById('temperatureChart').getContext('2d');
+    var temperatureChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Average Temperature (°C)',
+                data: historicalDataAvg,
+                borderColor: 'blue',
+                fill: false
+            },
+            {
+                label: 'Max Temperature (°C)',
+                data: historicalDataMax,
+                borderColor: 'red',
+                fill: false
+            },
+            {
+                label: 'Min Temperature (°C)',
+                data: historicalDataMin,
+                borderColor: 'green',
+                fill: false
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+
+
+
+</body>
+</html>
